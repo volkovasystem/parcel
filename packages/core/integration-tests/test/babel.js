@@ -91,7 +91,11 @@ describe('babel', function() {
   });
 
   it('should support compiling with babel using .babelrc config', async function() {
-    await bundle(path.join(__dirname, '/integration/babelrc-custom/index.js'));
+    console.log(
+      await bundle(
+        path.join(__dirname, '/integration/babelrc-custom/index.js'),
+      ),
+    );
 
     let file = await outputFS.readFile(path.join(distDir, 'index.js'), 'utf8');
     assert(!file.includes('REPLACE_ME'));

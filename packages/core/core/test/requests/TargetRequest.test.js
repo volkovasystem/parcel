@@ -4,9 +4,9 @@ import assert from 'assert';
 import path from 'path';
 import tempy from 'tempy';
 import {inputFS as fs} from '@parcel/test-utils';
-import {DEFAULT_OPTIONS} from './utils';
+import {DEFAULT_OPTIONS} from '../utils';
 
-import TargetResolver from '../src/TargetResolver';
+import {TargetResolver} from '../../src/requests/TargetRequest';
 
 const COMMON_TARGETS_FIXTURE_PATH = path.join(
   __dirname,

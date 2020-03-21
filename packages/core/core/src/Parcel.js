@@ -4,10 +4,10 @@ import type {
   AsyncSubscription,
   BundleGraph as IBundleGraph,
   BuildEvent,
-  EnvironmentOpts,
-  FilePath,
+  // EnvironmentOpts,
+  // FilePath,
   InitialParcelOptions,
-  ModuleSpecifier,
+  // ModuleSpecifier,
 } from '@parcel/types';
 import type {ParcelOptions} from './types';
 import type {FarmOptions} from '@parcel/workers';
@@ -16,8 +16,6 @@ import type {AbortSignal} from 'abortcontroller-polyfill/dist/cjs-ponyfill';
 
 import invariant from 'assert';
 import ThrowableDiagnostic, {anyToDiagnostic} from '@parcel/diagnostic';
-import {createDependency} from './Dependency';
-import {createEnvironment} from './Environment';
 import {assetFromValue} from './public/Asset';
 import BundleGraph from './public/BundleGraph';
 import BundlerRunner from './BundlerRunner';
@@ -26,7 +24,7 @@ import nullthrows from 'nullthrows';
 import AssetGraphBuilder from './AssetGraphBuilder';
 import {assertSignalNotAborted, BuildAbortError} from './utils';
 import PackagerRunner from './PackagerRunner';
-import loadParcelConfig from './loadParcelConfig';
+import {loadParcelConfig} from './requests/ParcelConfigRequest';
 import ReporterRunner, {report} from './ReporterRunner';
 import dumpGraphToGraphViz from './dumpGraphToGraphViz';
 import resolveOptions from './resolveOptions';
@@ -305,48 +303,48 @@ export default class Parcel {
     }
   }
 
-  // $FlowFixMe
-  async [INTERNAL_TRANSFORM]({
-    filePath,
-    env,
-    code,
-  }: {|
-    filePath: FilePath,
-    env: EnvironmentOpts,
-    code?: string,
-  |}) {
-    let [result] = await Promise.all([
-      this.#assetGraphBuilder.runTransform({
-        filePath,
-        code,
-        env: createEnvironment(env),
-      }),
-      this.#reporterRunner.config.getReporters(),
-    ]);
+  // // $FlowFixMe
+  // async [INTERNAL_TRANSFORM]({
+  //   filePath,
+  //   env,
+  //   code,
+  // }: {|
+  //   filePath: FilePath,
+  //   env: EnvironmentOpts,
+  //   code?: string,
+  // |}) {
+  //   let [result] = await Promise.all([
+  //     this.#assetGraphBuilder.runTransform({
+  //       filePath,
+  //       code,
+  //       env: createEnvironment(env),
+  //     }),
+  //     this.#reporterRunner.config.getReporters(),
+  //   ]);
 
-    return result;
-  }
+  //   return result;
+  // }
 
-  // $FlowFixMe
-  async [INTERNAL_RESOLVE]({
-    moduleSpecifier,
-    sourcePath,
-    env,
-  }: {|
-    moduleSpecifier: ModuleSpecifier,
-    sourcePath: FilePath,
-    env: EnvironmentOpts,
-  |}): Promise<FilePath> {
-    let resolved = await this.#assetGraphBuilder.resolverRunner.resolve(
-      createDependency({
-        moduleSpecifier,
-        sourcePath,
-        env: createEnvironment(env),
-      }),
-    );
+  // // $FlowFixMe
+  // async [INTERNAL_RESOLVE]({
+  //   moduleSpecifier,
+  //   sourcePath,
+  //   env,
+  // }: {|
+  //   moduleSpecifier: ModuleSpecifier,
+  //   sourcePath: FilePath,
+  //   env: EnvironmentOpts,
+  // |}): Promise<FilePath> {
+  //   let resolved = await this.#assetGraphBuilder.resolverRunner.resolve(
+  //     createDependency({
+  //       moduleSpecifier,
+  //       sourcePath,
+  //       env: createEnvironment(env),
+  //     }),
+  //   );
 
-    return resolved.filePath;
-  }
+  //   return resolved.filePath;
+  // }
 
   _getWatcherSubscription(): Promise<AsyncSubscription> {
     invariant(this.#watcherSubscription == null);

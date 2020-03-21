@@ -164,18 +164,18 @@ describe('AssetGraph', () => {
     });
     let req = {filePath: '/index.js', env: DEFAULT_ENV};
 
-    graph.resolveDependency(dep, nodeFromAssetGroup(req));
+    graph.resolveDependency(dep, req);
     assert(graph.nodes.has(nodeFromAssetGroup(req).id));
     assert(graph.hasEdge(dep.id, nodeFromAssetGroup(req).id));
 
     let req2 = {filePath: '/index.jsx', env: DEFAULT_ENV};
-    graph.resolveDependency(dep, nodeFromAssetGroup(req2));
+    graph.resolveDependency(dep, req2);
     assert(!graph.nodes.has(nodeFromAssetGroup(req).id));
     assert(graph.nodes.has(nodeFromAssetGroup(req2).id));
     assert(graph.hasEdge(dep.id, nodeFromAssetGroup(req2).id));
     assert(!graph.hasEdge(dep.id, nodeFromAssetGroup(req).id));
 
-    graph.resolveDependency(dep, nodeFromAssetGroup(req2));
+    graph.resolveDependency(dep, req2);
     assert(graph.nodes.has(nodeFromAssetGroup(req2).id));
     assert(graph.hasEdge(dep.id, nodeFromAssetGroup(req2).id));
   });
@@ -201,7 +201,7 @@ describe('AssetGraph', () => {
     });
     let filePath = '/index.js';
     let req = {filePath, env: DEFAULT_ENV};
-    graph.resolveDependency(dep, nodeFromAssetGroup(req));
+    graph.resolveDependency(dep, req);
     let sourcePath = filePath;
     let assets = [
       createAsset({
@@ -334,7 +334,7 @@ describe('AssetGraph', () => {
     });
     let filePath = '/index.js';
     let req = {filePath, env: DEFAULT_ENV};
-    graph.resolveDependency(dep, nodeFromAssetGroup(req));
+    graph.resolveDependency(dep, req);
     let sourcePath = filePath;
     let dep1 = createDependency({
       moduleSpecifier: 'dependent-asset-1',

@@ -83,6 +83,9 @@ export function nodeFromEntryFile(entry: Entry) {
   };
 }
 
+const invertMap = <K, V>(map: Map<K, V>): Map<V, K> =>
+  new Map([...map].map(([key, val]) => [val, key]));
+
 // Types that are considered incomplete when they don't have a child node
 const INCOMPLETE_TYPES = [
   'entry_specifier',
@@ -208,15 +211,95 @@ export default class AssetGraph extends Graph<AssetGraphNode> {
 
   resolveDependency(
     dependency: Dependency,
-    assetGroupNode: AssetGroupNode | null,
+    assetGroup: AssetGroup | null | void,
   ) {
     let depNode = this.nodes.get(dependency.id);
     if (!depNode) return;
     this.incompleteNodeIds.delete(depNode.id);
 
-    if (assetGroupNode) {
-      this.replaceNodesConnectedTo(depNode, [assetGroupNode]);
+    if (!assetGroup) {
+      return;
     }
+
+    let defer = this.shouldDeferDependency(dependency, assetGroup.sideEffects);
+    dependency.isDeferred = defer;
+
+    let assetGroupNode = nodeFromAssetGroup(assetGroup, defer);
+    let existingAssetGroupNode = this.getNode(assetGroupNode.id);
+    if (existingAssetGroupNode) {
+      // Don't overwrite non-deferred asset groups with deferred ones
+      invariant(existingAssetGroupNode.type === 'asset_group');
+      assetGroupNode.deferred = existingAssetGroupNode.deferred && defer;
+    }
+
+    if (existingAssetGroupNode) {
+      // Node already existed, that asset might have deferred dependencies,
+      // recheck all dependencies of all assets of this asset group
+      this.traverse((node, parent, actions) => {
+        if (node == assetGroupNode) {
+          return;
+        }
+
+        if (node.type === 'dependency' && !node.value.isDeferred) {
+          actions.skipChildren();
+          return;
+        }
+
+        if (node.type == 'asset_group') {
+          invariant(parent && parent.type === 'dependency');
+          if (
+            node.deferred &&
+            !this.shouldDeferDependency(parent.value, node.value.sideEffects)
+          ) {
+            parent.value.isDeferred = false;
+            node.deferred = false;
+            this.markIncomplete(node);
+          }
+
+          actions.skipChildren();
+        }
+
+        return node;
+      }, assetGroupNode);
+    }
+
+    // ?Does this need to go further up?
+    this.replaceNodesConnectedTo(depNode, [assetGroupNode]);
+  }
+
+  // Defer transforming this dependency if it is marked as weak, there are no side effects,
+  // no re-exported symbols are used by ancestor dependencies and the re-exporting asset isn't
+  // using a wildcard and isn't an entry (in library mode).
+  // This helps with performance building large libraries like `lodash-es`, which re-exports
+  // a huge number of functions since we can avoid even transforming the files that aren't used.
+  shouldDeferDependency(dependency: Dependency, sideEffects: ?boolean) {
+    let defer = false;
+    if (
+      dependency.isWeak &&
+      sideEffects === false &&
+      !dependency.symbols.has('*')
+    ) {
+      let depNode = this.getNode(dependency.id);
+      invariant(depNode);
+
+      let assets = this.getNodesConnectedTo(depNode);
+      let symbols = invertMap(dependency.symbols);
+      invariant(assets.length === 1);
+      let firstAsset = assets[0];
+      invariant(firstAsset.type === 'asset');
+      let resolvedAsset = firstAsset.value;
+      let deps = this.getIncomingDependencies(resolvedAsset);
+      defer = deps.every(
+        d =>
+          !(d.env.isLibrary && d.isEntry) &&
+          !d.symbols.has('*') &&
+          ![...d.symbols.keys()].some(symbol => {
+            let assetSymbol = resolvedAsset.symbols.get(symbol);
+            return assetSymbol != null && symbols.has(assetSymbol);
+          }),
+      );
+    }
+    return defer;
   }
 
   resolveAssetGroup(assetGroup: AssetGroup, assets: Array<Asset>) {
