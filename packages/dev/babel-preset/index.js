@@ -3,18 +3,22 @@ module.exports = () => ({
     [
       require('@babel/preset-env'),
       {
-        targets: {
-          node: 10,
-        },
+        targets: 'Chrome 75',
+        modules: false,
       },
     ],
-    require('@babel/preset-react'),
     require('@babel/preset-flow'),
   ],
   plugins: [
     require('@babel/plugin-proposal-class-properties'),
     require('@babel/plugin-proposal-nullish-coalescing-operator'),
     require('@babel/plugin-proposal-optional-chaining'),
+    [
+      require('@babel/plugin-transform-react-jsx'),
+      {
+        pragma: 'h',
+      },
+    ],
   ],
   env: {
     production: {

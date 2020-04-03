@@ -275,16 +275,18 @@ export function getThrowableDiagnosticForNode(
   }
   if (loc) {
     diagnostic.codeFrame = {
-      codeHighlights: {
-        start: {
-          line: loc.start.line,
-          column: loc.start.column + 1,
+      codeHighlights: [
+        {
+          start: {
+            line: loc.start.line,
+            column: loc.start.column + 1,
+          },
+          // - Babel's columns are exclusive, ours are inclusive (column - 1)
+          // - Babel has 0-based columns, ours are 1-based (column + 1)
+          // = +-0
+          end: loc.end,
         },
-        // - Babel's columns are exclusive, ours are inclusive (column - 1)
-        // - Babel has 0-based columns, ours are 1-based (column + 1)
-        // = +-0
-        end: loc.end,
-      },
+      ],
     };
   }
   return new ThrowableDiagnostic({

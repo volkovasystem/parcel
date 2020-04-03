@@ -1,6 +1,12 @@
 // @flow
 
-import type {Asset, Bundle, BundleGraph, Symbol} from '@parcel/types';
+import type {
+  Asset,
+  Bundle,
+  BundleGraph,
+  Symbol,
+  PluginOptions,
+} from '@parcel/types';
 import type {NodePath} from '@babel/traverse';
 import type {
   ExpressionStatement,
@@ -79,6 +85,8 @@ export function generateExports(
   bundle: Bundle,
   referencedAssets: Set<Asset>,
   path: NodePath<Program>,
+  replacements: Map<Symbol, Symbol>, // eslint-disable-line no-unused-vars
+  options: PluginOptions, // eslint-disable-line no-unused-vars
 ) {
   let exported = new Set<Symbol>();
   let statements: Array<ExpressionStatement> = [];

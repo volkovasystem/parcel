@@ -61,16 +61,18 @@ export default new Namer({
             message: `Target "${bundle.target.name}" declares an output file path of "${fullName}" which does not match the compiled bundle type "${bundle.type}".`,
             filePath: loc.filePath,
             codeFrame: {
-              codeHighlights: {
-                start: loc.start,
-                end: loc.end,
-                message: `Did you mean "${fullName.slice(
-                  0,
-                  -path.extname(fullName).length,
-                ) +
-                  '.' +
-                  bundle.type}"?`,
-              },
+              codeHighlights: [
+                {
+                  start: loc.start,
+                  end: loc.end,
+                  message: `Did you mean "${fullName.slice(
+                    0,
+                    -path.extname(fullName).length,
+                  ) +
+                    '.' +
+                    bundle.type}"?`,
+                },
+              ],
             },
             hints: [
               `Try changing the file extension of "${
@@ -119,7 +121,7 @@ function nameFromContent(bundle: Bundle, rootDir: FilePath): string {
       name = path.basename(entryFilePath);
     }
 
-    return name;
+    return name || 'bundle';
   }
 }
 

@@ -7,7 +7,9 @@ import logger from '@parcel/logger';
 import {CONFIG} from '@parcel/plugin';
 import nullthrows from 'nullthrows';
 
-const PARCEL_VERSION = require('../package.json').version;
+import {version as _PARCEL_VERSION} from '../package.json';
+// $FlowFixMe
+const PARCEL_VERSION = process.browser ? '2.0.0-repl' : _PARCEL_VERSION;
 
 export default async function loadPlugin<T>(
   packageManager: PackageManager,
