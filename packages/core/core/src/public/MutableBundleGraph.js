@@ -75,6 +75,7 @@ export default class MutableBundleGraph implements IMutableBundleGraph {
     let bundleGroup: BundleGroup = {
       target,
       entryAssetId: resolved.id,
+      bundleIds: [],
     };
 
     let bundleGroupNode = {
@@ -195,6 +196,7 @@ export default class MutableBundleGraph implements IMutableBundleGraph {
   }
 
   addBundleToBundleGroup(bundle: IBundle, bundleGroup: BundleGroup) {
+    bundleGroup.bundleIds.push(bundle.id);
     let bundleGroupId = getBundleGroupId(bundleGroup);
     this.#graph._graph.addEdge(bundleGroupId, bundle.id);
     this.#graph._graph.addEdge(bundleGroupId, bundle.id, 'bundle');
@@ -277,7 +279,13 @@ export default class MutableBundleGraph implements IMutableBundleGraph {
   getBundlesInBundleGroup(bundleGroup: BundleGroup): Array<IBundle> {
     return this.#graph
       .getBundlesInBundleGroup(bundleGroup)
-      .map(bundle => new Bundle(bundle, this.#graph, this.#options));
+      .sort(
+        (a, b) =>
+          bundleGroup.bundleIds.indexOf(a.id) -
+          bundleGroup.bundleIds.indexOf(b.id),
+      )
+      .map(bundle => new Bundle(bundle, this.#graph, this.#options))
+      .reverse();
   }
 
   getParentBundlesOfBundleGroup(bundleGroup: BundleGroup): Array<IBundle> {
