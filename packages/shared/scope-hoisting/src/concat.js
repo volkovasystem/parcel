@@ -3,15 +3,16 @@
 import type {Bundle, Asset, Symbol, BundleGraph} from '@parcel/types';
 import type {
   CallExpression,
-  Identifier,
   ClassDeclaration,
+  Expression,
+  Identifier,
   Node,
   Statement,
   VariableDeclaration,
 } from '@babel/types';
 
 import {parse as babelParse} from '@babel/parser';
-import path from 'path';
+import template from '@babel/template';
 import * as t from '@babel/types';
 import {
   isArrayPattern,
@@ -25,11 +26,12 @@ import {
   isStringLiteral,
   isVariableDeclaration,
 } from '@babel/types';
-import {simple as walkSimple, traverse} from '@parcel/babylon-walk';
-import {PromiseQueue} from '@parcel/utils';
+import path from 'path';
 import invariant from 'assert';
 import fs from 'fs';
 import nullthrows from 'nullthrows';
+import {simple as walkSimple, traverse} from '@parcel/babylon-walk';
+import {PromiseQueue} from '@parcel/utils';
 import {assertString, getName, getIdentifier, needsPrelude} from './utils';
 
 const HELPERS_PATH = path.join(__dirname, 'helpers.js');
@@ -43,6 +45,11 @@ const PRELUDE = parse(
   fs.readFileSync(path.join(__dirname, 'prelude.js'), 'utf8'),
   PRELUDE_PATH,
 );
+
+const JSON_TEMPLATE = template.statement<
+  {|id: Identifier, data: Expression|},
+  Statement,
+>(`var %%id%% = JSON.parse(%%data%%);`);
 
 type AssetASTMap = Map<string, Array<Statement>>;
 type TraversalContext = {|
@@ -148,14 +155,31 @@ async function processAsset(
   bundle: Bundle,
   asset: Asset,
   wrappedAssets: Set<string>,
-) {
+): Promise<[string, Array<Statement>]> {
   let statements: Array<Statement>;
-  if (asset.astGenerator && asset.astGenerator.type === 'babel') {
-    let ast = await asset.getAST();
-    statements = t.cloneNode(nullthrows(ast).program.program).body;
+  if (asset.type === 'js') {
+    if (asset.astGenerator && asset.astGenerator.type === 'babel') {
+      let ast = await asset.getAST();
+      statements = t.cloneNode(nullthrows(ast).program.program).body;
+    } else {
+      let code = await asset.getCode();
+      statements = parse(code, asset.filePath);
+    }
   } else {
-    let code = await asset.getCode();
-    statements = parse(code, asset.filePath);
+    invariant(asset.type === 'json');
+
+    // wrap the JSON asset
+    let exportsIdentifier = getName(asset, 'exports');
+    statements = [
+      JSON_TEMPLATE({
+        id: t.identifier(exportsIdentifier),
+        data: t.stringLiteral(await asset.getCode()),
+      }),
+    ];
+    asset.meta.id = asset.id;
+    asset.meta.exportsIdentifier = exportsIdentifier;
+    asset.meta.isCommonJS = true;
+    asset.symbols.set('*', exportsIdentifier);
   }
 
   if (wrappedAssets.has(asset.id)) {
