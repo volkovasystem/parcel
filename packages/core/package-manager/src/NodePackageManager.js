@@ -32,6 +32,7 @@ import packagerCss from '@parcel/packager-css';
 import packagerHtml from '@parcel/packager-html';
 import packagerJs from '@parcel/packager-js';
 import packagerRaw from '@parcel/packager-raw';
+import resolverSourcemapVisualizser from '@parcel/reporter-sourcemap-visualiser';
 import reporterJson from '@parcel/reporter-json';
 import resolverDefault from '@parcel/resolver-default';
 import runtimeJs from '@parcel/runtime-js';
@@ -44,6 +45,7 @@ import transformerJson from '@parcel/transformer-json';
 import transformerPostcss from '@parcel/transformer-postcss';
 import transformerPosthtml from '@parcel/transformer-posthtml';
 import transformerRaw from '@parcel/transformer-raw';
+
 const BUILTINS = {
   '@parcel/bundler-default': bundlerDefault,
   '@parcel/namer-default': namerDefault,
@@ -54,6 +56,7 @@ const BUILTINS = {
   '@parcel/packager-raw': packagerRaw,
   '@parcel/reporter-json': reporterJson,
   '@parcel/resolver-default': resolverDefault,
+  '@parcel/reporter-sourcemap-visualiser': resolverSourcemapVisualizser,
   '@parcel/runtime-js': runtimeJs,
   '@parcel/transformer-babel': transformerBabel,
   '@parcel/transformer-css': transformerCss,

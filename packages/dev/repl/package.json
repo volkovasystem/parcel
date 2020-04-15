@@ -25,11 +25,13 @@
     "filesize": "^6.1.0",
     "isomorphic-fetch": "^2.2.1",
     "preact": "^10.4.0",
-    "semver": "^7.3.0"
+    "semver": "^7.3.0",
+    "sourcemap-visualiser": "mischnic/sourcemap-visualiser#4de8310"
   },
   "alias": {
+    "@parcel/watcher": false,
     "fs": "./fs.js",
-    "@parcel/watcher": false
+    "react": "preact/compat"
   },
   "browserslist": "Chrome 75",
   "targets": {

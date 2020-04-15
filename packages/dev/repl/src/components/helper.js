@@ -4,6 +4,7 @@ import {useState, useEffect} from 'preact/hooks';
 import {memo} from 'preact/compat';
 import {ctrlKey} from '../utils';
 import renderGraph from '../graphs/index.js';
+/* eslint-disable react/jsx-no-bind */
 
 export function ParcelError({error}) {
   return (
@@ -120,4 +121,19 @@ export function useDebounce(value, delay) {
   }, [value, delay]);
 
   return debouncedValue;
+}
+
+const addBodyClass = className => document.body.classList.add(className);
+const removeBodyClass = className => document.body.classList.remove(className);
+export function useBodyClass(className) {
+  let classNames = Array.isArray(className) ? className : [className];
+  useEffect(() => {
+    // Set up
+    classNames.forEach(addBodyClass);
+
+    // Clean up
+    return () => {
+      classNames.forEach(removeBodyClass);
+    };
+  }, [className]);
 }

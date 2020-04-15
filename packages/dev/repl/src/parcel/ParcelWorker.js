@@ -23,6 +23,7 @@ export type BundleOutput =
       |}>,
       buildTime: number,
       graphs: ?Array<{|name: string, content: string|}>,
+      sourcemaps: ?mixed,
     |}
   | {|
       type: 'failure',
@@ -84,47 +85,57 @@ async function bundle(
   assets: Assets,
   options: REPLOptions,
 ): Promise<BundleOutput> {
-  let graphs = options.showGraphs ? [] : null;
+  let graphs = options.renderGraphs ? [] : null;
   // $FlowFixMe
   globalThis.PARCEL_DUMP_GRAPHVIZ =
     graphs && ((name, content) => graphs.push({name, content}));
 
-  const resultFromReporter = new Promise(res => {
-    globalThis.PARCEL_JSON_LOGGER_STDOUT = d => {
-      switch (d.type) {
-        // case 'buildStart':
-        //   console.log('📦 Started');
-        //   break;
-        // case 'buildProgress': {
-        //   let phase = d.phase.charAt(0).toUpperCase() + d.phase.slice(1);
-        //   let filePath = d.filePath || d.bundleFilePath;
-        //   console.log(`🕓 ${phase} ${filePath ? filePath : ''}`);
-        //   break;
-        // }
-        case 'buildSuccess':
-          // console.log(`✅ Succeded in ${/* prettifyTime */ d.buildTime}`);
-          // console.group('Output');
-          // for (let {filePath} of d.bundles) {
-          //   console.log(
-          //     '%c%s:\n%c%s',
-          //     'font-weight: bold',
-          //     filePath,
-          //     'font-family: monospace',
-          //     await memFS.readFile(filePath, 'utf8'),
-          //   );
+  const resultFromReporter = Promise.all([
+    new Promise(res => {
+      globalThis.PARCEL_JSON_LOGGER_STDOUT = d => {
+        switch (d.type) {
+          // case 'buildStart':
+          //   console.log('📦 Started');
+          //   break;
+          // case 'buildProgress': {
+          //   let phase = d.phase.charAt(0).toUpperCase() + d.phase.slice(1);
+          //   let filePath = d.filePath || d.bundleFilePath;
+          //   console.log(`🕓 ${phase} ${filePath ? filePath : ''}`);
+          //   break;
           // }
-          // console.groupEnd();
-          res({success: d});
-          break;
-        case 'buildFailure': {
-          // console.log(`❗️`, d);
-          res({failure: d.message});
-          break;
+          case 'buildSuccess':
+            // console.log(`✅ Succeded in ${/* prettifyTime */ d.buildTime}`);
+            // console.group('Output');
+            // for (let {filePath} of d.bundles) {
+            //   console.log(
+            //     '%c%s:\n%c%s',
+            //     'font-weight: bold',
+            //     filePath,
+            //     'font-family: monospace',
+            //     await memFS.readFile(filePath, 'utf8'),
+            //   );
+            // }
+            // console.groupEnd();
+            res({success: d});
+            break;
+          case 'buildFailure': {
+            // console.log(`❗️`, d);
+            res({failure: d.message});
+            break;
+          }
         }
-      }
-    };
-    globalThis.PARCEL_JSON_LOGGER_STDERR = globalThis.PARCEL_JSON_LOGGER_STDOUT;
-  });
+      };
+      globalThis.PARCEL_JSON_LOGGER_STDERR =
+        globalThis.PARCEL_JSON_LOGGER_STDOUT;
+    }),
+    options.viewSourcemaps
+      ? new Promise(res => {
+          globalThis.PARCEL_SOURCEMAP_VISUALIZER = v => {
+            res(v);
+          };
+        })
+      : null,
+  ]);
 
   // $FlowFixMe
   globalThis.fs = fs;
@@ -174,7 +185,7 @@ async function bundle(
   try {
     await b.run();
 
-    let output = await resultFromReporter;
+    let [output, sourcemaps] = await resultFromReporter;
     if (output.success) {
       let bundleContents = [];
       for (let {filePath, size, time} of output.success.bundles) {
@@ -191,6 +202,7 @@ async function bundle(
         bundles: bundleContents,
         buildTime: output.success.buildTime,
         graphs,
+        sourcemaps,
       };
     } else {
       return {

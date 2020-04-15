@@ -5,11 +5,13 @@ if (process.env.NODE_ENV === 'development') {
   require('preact/debug');
 }
 import type {Assets, REPLOptions} from './utils';
+import type {BundleOutput} from './parcel/ParcelWorker';
 
 // eslint-disable-next-line no-unused-vars
 import {h, render, Fragment} from 'preact';
 import {useState, useEffect, useCallback, useReducer} from 'preact/hooks';
 import Asset from './components/Asset';
+import SourceMapVisualiser from './components/SourceMapVisualiser';
 import Options, {DEFAULT_OPTIONS} from './components/Options';
 import {ParcelError, Notes, Graphs, useDebounce} from './components/helper';
 // import Preview from './components/Preview';
@@ -53,9 +55,10 @@ function App() {
     initialHashState.options || DEFAULT_OPTIONS,
   );
 
-  const [currentPreset, setCurrentPreset] = useState(
-    initialHashState.currentPreset || DEFAULT_PRESET,
-  );
+  const [currentPreset, setCurrentPreset]: [
+    string,
+    (string) => void,
+  ] = useState(initialHashState.currentPreset || DEFAULT_PRESET);
 
   const [bundlingState, setBundlingState] = useState(BUNDLING_READY);
   const [workerState, setWorkerState] = useState(WORKER_STATE_LOADING);
@@ -63,7 +66,10 @@ function App() {
     await workerReady;
     setWorkerState(WORKER_STATE_SUCCESS);
   }, []);
-  const [output, setOutput] = useState();
+  const [output, setOutput]: [
+    ?BundleOutput,
+    (?BundleOutput) => void,
+  ] = useState();
 
   const [installPrompt, setInstallPrompt] = useState(null);
 
@@ -264,6 +270,9 @@ function App() {
                       />
                     ))}
                     {output.graphs && <Graphs graphs={output.graphs} />}
+                    {output.sourcemaps && (
+                      <SourceMapVisualiser maps={output.sourcemaps} />
+                    )}
                     {/* <Preview output={output.assets} options={options} /> */}
                     {/* <button disabled onClick={downloadZip}>
                       Download ZIP

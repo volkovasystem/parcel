@@ -1,3 +1,7 @@
+.no-scroll {
+  overflow: hidden;
+}
+
 #app {
   padding: 0.6em;
   padding-top: 0.2em;
@@ -56,6 +60,12 @@ button:enabled:active {
 .file {
   border: 0.15em solid #ddd;
 }
+
+.file > hr {
+  border: 1px solid currentColor;
+  color: #ddd;
+}
+
 .file > * {
   width: 100%;
 }
@@ -91,6 +101,22 @@ button:enabled:active {
   font-size: 1em;
   padding: 0.4em;
 }
+
+.overlay-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.5);
+}
+.overlay {
+  background: white;
+  height: 100%;
+}
+
 
 /* LEFT COLUMN */
 

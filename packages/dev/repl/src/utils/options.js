@@ -9,7 +9,8 @@ export type REPLOptions = {|
   targetType: 'node' | 'browsers',
   targetEnv: null | string,
   outputFormat: null | 'esmodule' | 'commonjs' | 'global',
-  showGraphs: boolean,
+  renderGraphs: boolean,
+  viewSourcemaps: boolean,
 |};
 
 export function getDefaultTargetEnv(

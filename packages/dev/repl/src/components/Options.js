@@ -15,7 +15,8 @@ export const DEFAULT_OPTIONS: REPLOptions = {
   targetType: 'browsers',
   targetEnv: null,
   outputFormat: null,
-  showGraphs: false,
+  renderGraphs: false,
+  viewSourcemaps: false,
 };
 
 export default function Options({
@@ -94,12 +95,21 @@ export default function Options({
           />
         </div>
       </label>
+      <hr />
       <label title="env variable PARCEL_DUMP_GRAPHVIZ">
         <span>Render Graphs</span>
         <input
           type="checkbox"
-          checked={values.showGraphs}
-          onChange={e => onChange('showGraphs', e.target.checked)}
+          checked={values.renderGraphs}
+          onChange={e => onChange('renderGraphs', e.target.checked)}
+        />
+      </label>
+      <label>
+        <span>View sourcemaps</span>
+        <input
+          type="checkbox"
+          checked={values.viewSourcemaps}
+          onChange={e => onChange('viewSourcemaps', e.target.checked)}
         />
       </label>
     </div>
