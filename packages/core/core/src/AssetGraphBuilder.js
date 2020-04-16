@@ -34,7 +34,7 @@ import ParcelConfig from './ParcelConfig';
 import ParcelConfigRequestRunner from './requests/ParcelConfigRequest';
 import EntryRequestRunner from './requests/EntryRequest';
 import TargetRequestRunner from './requests/TargetRequest';
-import AssetRequestRunner from './requests/AssetRequest';
+import assetRequest from './requests/AssetRequest';
 import DepPathRequestRunner from './requests/PathRequest';
 
 import Validation from './Validation';
@@ -171,7 +171,6 @@ export default class AssetGraphBuilder extends EventEmitter {
         this.options.autoinstall,
       );
       let {requestTracker: tracker} = this;
-      this.assetRequestRunner = new AssetRequestRunner({tracker});
       this.depPathRequestRunner = new DepPathRequestRunner({tracker});
     }
 
@@ -293,7 +292,7 @@ export default class AssetGraphBuilder extends EventEmitter {
         return this.runDepPathRequest(request.request, runOpts);
       case 'asset_request':
         this.assetRequests.push(request);
-        return this.runAssetRequest(request.request, runOpts);
+        return this.runAssetRequest(request.request);
     }
   }
 
@@ -329,20 +328,18 @@ export default class AssetGraphBuilder extends EventEmitter {
     this.assetGraph.resolveDependency(request, result);
   }
 
-  async runAssetRequest(request: AssetRequestDesc, runOpts: RunRequestOpts) {
-    let assets = await this.assetRequestRunner.runRequest({
-      request,
-      extras: {
-        configRef: this.configRef,
-        optionsRef: this.optionsRef,
-      },
-      ...runOpts,
+  async runAssetRequest(request: AssetRequestDesc) {
+    let {configRef, optionsRef, ...assetGroup} = request;
+    let assets = await this.requestTracker.makeRequest(assetRequest)({
+      ...assetGroup,
+      configRef: this.configRef,
+      optionsRef: this.optionsRef,
     });
     if (assets != null) {
       for (let asset of assets) {
         this.changedAssets.set(asset.id, asset);
       }
-      this.assetGraph.resolveAssetGroup(request, assets);
+      this.assetGraph.resolveAssetGroup(assetGroup, assets);
     }
   }
 
@@ -377,7 +374,7 @@ export default class AssetGraphBuilder extends EventEmitter {
         return {
           type,
           request: node.value,
-          id: generateRequestId(type, node.value),
+          id: this.requestTracker.generateRequestId(assetRequest, node.value),
         };
       }
     }
