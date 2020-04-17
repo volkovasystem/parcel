@@ -32,7 +32,7 @@ export type RequestBlah = {|
 type RequestNode = {|
   id: string,
   +type: 'request',
-  value: Request,
+  value: RequestBlah,
 |};
 type RequestGraphNode = RequestNode | FileNode | GlobNode;
 
@@ -130,7 +130,7 @@ export class RequestGraph extends Graph<
     return node;
   }
 
-  completeRequest(request: Request) {
+  completeRequest(request: RequestBlah) {
     this.invalidNodeIds.delete(request.id);
     this.incompleteNodeIds.delete(request.id);
   }
@@ -374,15 +374,16 @@ export default class RequestTracker {
     this.graph.replaceSubrequests(requestId, subrequestNodes);
   }
 
-  makeRequest(request) {
-    return async input => {
+  makeRequest(request: Request) {
+    return async (input: mixed) => {
       let id = this.generateRequestId(request, input);
       try {
         let api = this.createAPI(id);
 
         this.trackRequest({id, type: request.type, request: input});
-        let result: TResult = this.hasValidResult(id)
-          ? // $FlowFixMe
+        let result: mixed = this.hasValidResult(id)
+          ? // TODO: figure out how to type safely
+            // $FlowFixMe
             (this.getRequestResult(id): any)
           : await request.run({
               input,
@@ -421,7 +422,7 @@ export default class RequestTracker {
     return api;
   }
 
-  generateRequestId(request, input) {
+  generateRequestId(request: Request, input: mixed) {
     return `${request.type}:${request.getId(input)}`;
   }
 }
@@ -455,17 +456,16 @@ export function generateRequestId(type: string, request: mixed) {
   return md5FromObject({type, request});
 }
 
-export class Request {
-  constructor({type, run, getId}) {
-    this.type = type;
-    this.run = run;
-    this.getId = getId;
-  }
-}
+type Request = {|
+  type: string,
+  run: mixed => mixed,
+  getId: mixed => string,
+|};
 
 export class RequestRunner<TRequest, TResult> {
   type: string;
-  tracker: RequestTracker;
+  // $FlowFixMe RequestRunner will be removed during refactor
+  tracker: RequestTracker<any>;
 
   constructor({tracker}: RequestRunnerOpts) {
     this.tracker = tracker;
@@ -488,7 +488,14 @@ export class RequestRunner<TRequest, TResult> {
       let result: TResult = this.tracker.hasValidResult(id)
         ? // $FlowFixMe
           (this.tracker.getRequestResult(id): any)
-        : await this.run({request: request, api, farm, options, extras});
+        : await this.run({
+            request: request,
+            api,
+            farm,
+            options,
+            extras,
+            graph: this.tracker.graph,
+          });
       assertSignalNotAborted(signal);
       this.tracker.completeRequest(id);
 

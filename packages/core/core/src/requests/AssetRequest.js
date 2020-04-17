@@ -13,18 +13,17 @@ import type {
 import {md5FromObject} from '@parcel/utils';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
-import {Request, generateRequestId} from '../RequestTracker';
+import {generateRequestId} from '../RequestTracker';
 
-export type AssetRequest = {|
-  id: string,
-  +type: 'asset_request',
-  request: AssetRequestInput,
-  result?: AssetRequestResult,
-|};
-
-type RunOpts = {|
+type RunInput = {|
   input: AssetRequestInput,
   ...StaticRunOpts,
+|};
+
+export type AssetRequestType = {|
+  getId: AssetRequestInput => string,
+  +type: 'asset_request',
+  run: RunInput => AssetRequestResult,
 |};
 
 // export default function createAssetRequest(opts: AssetRequestOpts) {
@@ -47,14 +46,14 @@ function getRunTransform(
   // ? Could this singleton cause problems
 }
 
-export default new Request({
+const AssetRequest = {
   type: 'asset_request',
-  getId(input) {
+  getId(input: AssetRequestInput) {
     // eslint-disable-next-line no-unused-vars
     let {optionsRef, configRef, ...hashInput} = input;
     return md5FromObject(hashInput);
   },
-  async run({input, api, options, farm, graph}: RunOpts) {
+  async run({input, api, options, farm, graph}: RunInput) {
     api.invalidateOnFileUpdate(await options.inputFS.realpath(input.filePath));
     let start = Date.now();
     let {configRef, optionsRef, ...request} = input;
@@ -143,4 +142,6 @@ export default new Request({
 
     return assets;
   },
-});
+};
+
+export default AssetRequest;

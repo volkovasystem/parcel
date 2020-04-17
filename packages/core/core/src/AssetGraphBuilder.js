@@ -9,6 +9,7 @@ import type {
   AssetGraphNode,
   AssetGroup,
   AssetRequestInput,
+  AssetRequestResult,
   Dependency,
   Entry,
   ParcelOptions,
@@ -17,7 +18,6 @@ import type {
 import type {RunRequestOpts} from './RequestTracker';
 import type {EntryRequest} from './requests/EntryRequest';
 import type {TargetRequest} from './requests/TargetRequest';
-import type {AssetRequest} from './requests/AssetRequest';
 import type {DepPathRequest} from './requests/PathRequest';
 
 import EventEmitter from 'events';
@@ -57,6 +57,13 @@ const requestPriorities: $ReadOnlyArray<$ReadOnlyArray<string>> = [
   ['target_request'],
   ['dep_path_request', 'asset_request'],
 ];
+
+type AssetRequest = {|
+  id: string,
+  +type: 'asset_request',
+  request: AssetRequestInput,
+  result?: AssetRequestResult,
+|};
 
 type AssetGraphBuildRequest =
   | EntryRequest
