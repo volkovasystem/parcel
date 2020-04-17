@@ -1,9 +1,9 @@
 // @flow strict-local
 import type WorkerFarm from '@parcel/workers';
-import type {StaticRunOpts, RequestRunnerOpts} from '../RequestTracker';
+import type {StaticRunOpts} from '../RequestTracker';
 import type {
   Asset,
-  AssetRequestDesc,
+  AssetRequestInput,
   AssetRequestResult,
   Config,
   ConfigRequestDesc,
@@ -18,12 +18,12 @@ import {Request, generateRequestId} from '../RequestTracker';
 export type AssetRequest = {|
   id: string,
   +type: 'asset_request',
-  request: AssetRequestDesc,
+  request: AssetRequestInput,
   result?: AssetRequestResult,
 |};
 
 type RunOpts = {|
-  request: AssetRequestDesc,
+  input: AssetRequestInput,
   ...StaticRunOpts,
 |};
 

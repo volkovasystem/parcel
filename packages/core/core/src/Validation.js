@@ -2,7 +2,7 @@
 
 import type {WorkerApi} from '@parcel/workers';
 import type {
-  AssetRequestDesc,
+  AssetRequestInput,
   ConfigRequestDesc,
   ParcelOptions,
   ReportFn,
@@ -29,7 +29,7 @@ export type ValidationOpts = {|
    */
   dedicatedThread?: boolean,
   options: ParcelOptions,
-  requests: AssetRequestDesc[],
+  requests: AssetRequestInput[],
   report: ReportFn,
   workerApi?: WorkerApi,
 |};
@@ -44,7 +44,7 @@ export default class Validation {
   options: ParcelOptions;
   parcelConfig: ParcelConfig;
   report: ReportFn;
-  requests: AssetRequestDesc[];
+  requests: AssetRequestInput[];
   workerApi: ?WorkerApi;
 
   constructor({
@@ -177,7 +177,7 @@ export default class Validation {
     }
   }
 
-  async loadAsset(request: AssetRequestDesc): Promise<UncommittedAsset> {
+  async loadAsset(request: AssetRequestInput): Promise<UncommittedAsset> {
     let {filePath, env, code, sideEffects} = request;
     let {content, size, hash, isSource} = await summarizeRequest(
       this.options.inputFS,

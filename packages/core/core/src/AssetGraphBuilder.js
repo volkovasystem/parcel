@@ -7,7 +7,8 @@ import type {Event} from '@parcel/watcher';
 import type {
   Asset,
   AssetGraphNode,
-  AssetRequestDesc,
+  AssetGroup,
+  AssetRequestInput,
   Dependency,
   Entry,
   ParcelOptions,
@@ -47,7 +48,7 @@ type Opts = {|
   optionsRef: number,
   name: string,
   entries?: Array<string>,
-  assetRequests?: Array<AssetRequestDesc>,
+  assetGroups?: Array<AssetGroup>,
   workerFarm: WorkerFarm,
 |};
 
@@ -70,7 +71,6 @@ export default class AssetGraphBuilder extends EventEmitter {
   entryRequestRunner: EntryRequestRunner;
   targetRequestRunner: TargetRequestRunner;
   depPathRequestRunner: DepPathRequestRunner;
-  assetRequestRunner: AssetRequestRunner;
   configRequestRunner: ParcelConfigRequestRunner;
   assetRequests: Array<AssetRequest>;
   runValidate: ValidationOpts => Promise<void>;
@@ -92,7 +92,7 @@ export default class AssetGraphBuilder extends EventEmitter {
     optionsRef,
     entries,
     name,
-    assetRequests,
+    assetGroups,
     workerFarm,
   }: Opts) {
     this.options = options;
@@ -123,20 +123,21 @@ export default class AssetGraphBuilder extends EventEmitter {
       this.requestGraph = new RequestGraph();
     }
 
-    this.assetGraph.initOptions({
-      onNodeRemoved: node => this.handleNodeRemovedFromAssetGraph(node),
-      onIncompleteNode: node => this.handleIncompleteNode(node),
-    });
-
     this.requestTracker = new RequestTracker({
       graph: this.requestGraph,
       farm: workerFarm,
       options: this.options,
     });
     let tracker = this.requestTracker;
+    this.configRequestRunner = new ParcelConfigRequestRunner({tracker});
     this.entryRequestRunner = new EntryRequestRunner({tracker});
     this.targetRequestRunner = new TargetRequestRunner({tracker});
-    this.configRequestRunner = new ParcelConfigRequestRunner({tracker});
+    await this.setupConfigStuff();
+
+    this.assetGraph.initOptions({
+      onNodeRemoved: node => this.handleNodeRemovedFromAssetGraph(node),
+      onIncompleteNode: node => this.handleIncompleteNode(node),
+    });
 
     if (changes) {
       this.requestGraph.invalidateUnpredictableNodes();
@@ -144,17 +145,12 @@ export default class AssetGraphBuilder extends EventEmitter {
     } else {
       this.assetGraph.initialize({
         entries,
-        assetGroups: assetRequests,
+        assetGroups,
       });
     }
   }
 
-  async build(
-    signal?: AbortSignal,
-  ): Promise<{|
-    assetGraph: AssetGraph,
-    changedAssets: Map<string, Asset>,
-  |}> {
+  async setupConfigStuff(signal?: AbortSignal) {
     let {config, configRef} = nullthrows(
       await this.configRequestRunner.runRequest({
         request: null,
@@ -173,6 +169,15 @@ export default class AssetGraphBuilder extends EventEmitter {
       let {requestTracker: tracker} = this;
       this.depPathRequestRunner = new DepPathRequestRunner({tracker});
     }
+  }
+
+  async build(
+    signal?: AbortSignal,
+  ): Promise<{|
+    assetGraph: AssetGraph,
+    changedAssets: Map<string, Asset>,
+  |}> {
+    await this.setupConfigStuff();
 
     this.rejected = new Map();
     let lastQueueError;
@@ -328,9 +333,11 @@ export default class AssetGraphBuilder extends EventEmitter {
     this.assetGraph.resolveDependency(request, result);
   }
 
-  async runAssetRequest(request: AssetRequestDesc) {
+  async runAssetRequest(request: AssetRequestInput) {
+    // eslint-disable-next-line no-unused-vars
     let {configRef, optionsRef, ...assetGroup} = request;
-    let assets = await this.requestTracker.makeRequest(assetRequest)({
+    let assets;
+    assets = await this.requestTracker.makeRequest(assetRequest)({
       ...assetGroup,
       configRef: this.configRef,
       optionsRef: this.optionsRef,
@@ -373,7 +380,11 @@ export default class AssetGraphBuilder extends EventEmitter {
         let type = 'asset_request';
         return {
           type,
-          request: node.value,
+          request: {
+            ...node.value,
+            configRef: this.configRef,
+            optionsRef: this.optionsRef,
+          },
           id: this.requestTracker.generateRequestId(assetRequest, node.value),
         };
       }

@@ -54,7 +54,7 @@ const nodeFromGlob = (glob: Glob) => ({
   value: glob,
 });
 
-const nodeFromRequest = (request: Request) => ({
+const nodeFromRequest = (request: RequestBlah) => ({
   id: request.id,
   type: 'request',
   value: request,
@@ -114,7 +114,7 @@ export class RequestGraph extends Graph<
   }
 
   // TODO: deprecate
-  addRequest(request: Request) {
+  addRequest(request: RequestBlah) {
     let requestNode = nodeFromRequest(request);
     if (!this.hasNode(requestNode.id)) {
       this.addNode(requestNode);
@@ -272,21 +272,24 @@ export default class RequestTracker {
   graph: RequestGraph;
   farm: WorkerFarm;
   options: ParcelOptions;
+  signal: ?AbortSignal;
 
   constructor({
     graph,
     farm,
     options,
-    signal,
   }: {|
     graph: RequestGraph,
     farm: WorkerFarm,
     options: ParcelOptions,
-    signal: AbortSignal,
   |}) {
     this.graph = graph || new RequestGraph();
     this.farm = farm;
     this.options = options;
+  }
+
+  // TODO: refactor (abortcontroller should be created by RequestTracker)
+  setSignal(signal?: AbortSignal) {
     this.signal = signal;
   }
 
@@ -354,7 +357,7 @@ export default class RequestTracker {
     return this.graph.invalidNodeIds.size > 0;
   }
 
-  getInvalidRequests(): Array<Request> {
+  getInvalidRequests(): Array<RequestBlah> {
     let invalidRequests = [];
     for (let id of this.graph.invalidNodeIds) {
       let node = nullthrows(this.graph.getNode(id));
@@ -436,6 +439,7 @@ export type StaticRunOpts = {|
   options: ParcelOptions,
   api: RequestRunnerAPI,
   extras: mixed,
+  graph: RequestGraph,
 |};
 
 export type RequestRunnerAPI = {|

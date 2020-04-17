@@ -1,7 +1,7 @@
 // @flow strict-local
 import type {Blob, FilePath} from '@parcel/types';
 import type {FileSystem} from '@parcel/fs';
-import type {AssetRequestDesc} from './types';
+import type {AssetRequestInput} from './types';
 
 import {md5FromReadableStream, md5FromString, TapStream} from '@parcel/utils';
 import path from 'path';
@@ -12,7 +12,7 @@ const BUFFER_LIMIT = 5000000; // 5mb
 
 export default async function summarizeRequest(
   fs: FileSystem,
-  req: AssetRequestDesc,
+  req: AssetRequestInput,
 ): Promise<{|content: Blob, hash: string, size: number, isSource: boolean|}> {
   let [{content, hash, size}, isSource] = await Promise.all([
     summarizeDiskRequest(fs, req),
@@ -30,7 +30,7 @@ async function isFilePathSource(fs: FileSystem, filePath: FilePath) {
 
 function summarizeDiskRequest(
   fs: FileSystem,
-  req: AssetRequestDesc,
+  req: AssetRequestInput,
 ): Promise<{|content: Blob, hash: string, size: number|}> {
   return new Promise((resolve, reject) => {
     let code = req.code;
