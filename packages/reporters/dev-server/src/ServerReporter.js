@@ -86,6 +86,32 @@ export default new Reporter({
           server.buildStart();
         }
         break;
+      case 'buildProgress':
+        if (event.phase === 'bundled' && hmrServer) {
+          // let bailout = false;
+          // // Test if it's safe to rerun this asset (= is there no chance it could import an unwritten bundle)
+          // for (let [, asset] of event.changedAssets) {
+          //   // TODO
+          //   let deps = event.bundleGraph.getDependencies(asset);
+          //   if (
+          //     deps.some(d => {
+          //       let resolution = event.bundleGraph.resolveExternalDependency(d);
+          //       if (resolution && resolution.type === 'bundle_group')
+          //         return true;
+          //     })
+          //   ) {
+          //     bailout = true;
+          //     break;
+          //   }
+          // }
+          // if (!bailout) {
+          //   logger.verbose({message: 'Doing a fast HMR update'});
+          hmrServer.emitUpdate(event);
+          // } else {
+          //   logger.verbose({message: 'Bailed out of fast HMR update'});
+          // }
+        }
+        break;
       case 'buildSuccess':
         if (serve) {
           if (!server) {
@@ -97,9 +123,9 @@ export default new Reporter({
 
           server.buildSuccess(event.bundleGraph);
         }
-        if (hmrServer) {
-          hmrServer.emitUpdate(event);
-        }
+        // if (hmrServer) {
+        //   hmrServer.emitUpdate(event);
+        // }
         break;
       case 'buildFailure':
         // On buildFailure watchStart sometimes has not been called yet

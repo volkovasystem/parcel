@@ -1,6 +1,6 @@
 // @flow
 
-import type {BuildSuccessEvent} from '@parcel/types';
+import type {Asset, BundleGraph} from '@parcel/types';
 import type {Diagnostic} from '@parcel/diagnostic';
 import type {AnsiDiagnosticResult} from '@parcel/utils';
 import type {ServerError, HMRServerOptions} from './types.js.flow';
@@ -33,6 +33,7 @@ export default class HMRServer {
   wss: WebSocket.Server;
   unresolvedError: HMRMessage | null = null;
   options: HMRServerOptions;
+  // handledUpdates = new WeakSet<Map<string, Asset>>();
 
   constructor(options: HMRServerOptions) {
     this.options = options;
@@ -94,11 +95,21 @@ export default class HMRServer {
     this.broadcast(this.unresolvedError);
   }
 
-  async emitUpdate(event: BuildSuccessEvent) {
+  async emitUpdate(event: {
+    +bundleGraph: BundleGraph,
+    +changedAssets: Map<string, Asset>,
+    ...
+  }) {
+    // if (this.handledUpdates.has(event.changedAssets)) return;
+    // this.handledUpdates.add(event.changedAssets);
     this.unresolvedError = null;
 
     let changedAssets = Array.from(event.changedAssets.values());
     if (changedAssets.length === 0) return;
+
+    this.options.logger.verbose({
+      message: `Emitting HMR update for ${changedAssets.length} asset`,
+    });
 
     let assets = await Promise.all(
       changedAssets.map(async asset => {
@@ -141,7 +152,6 @@ export default class HMRServer {
     }
 
     this.options.logger.warn({
-      origin: '@parcel/reporter-dev-server',
       message: `[${err.code}]: ${err.message}`,
       stack: err.stack,
     });
