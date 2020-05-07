@@ -8,10 +8,35 @@ import Parcel from '@parcel/core';
 // import {NodePackageManager} from '@parcel/package-manager';
 // import {prettifyTime} from '@parcel/utils';
 import fs from '../../fs.js';
+
 import workerFarm from '../../workerFarm.js';
 import {generatePackageJson, nthIndex} from '../utils/';
 import defaultConfig from '@parcel/config-repl';
+// TODO
+// import path from 'path';
+function dirname(path) {
+  if (path.length === 0) return '.';
+  var code = path.charCodeAt(0);
+  var hasRoot = code === 47; /*/*/
+  var end = -1;
+  var matchedSlash = true;
+  for (var i = path.length - 1; i >= 1; --i) {
+    code = path.charCodeAt(i);
+    if (code === 47 /*/*/) {
+      if (!matchedSlash) {
+        end = i;
+        break;
+      }
+    } else {
+      // We saw the first non-path separator
+      matchedSlash = false;
+    }
+  }
 
+  if (end === -1) return hasRoot ? '/' : '.';
+  if (hasRoot && end === 1) return '//';
+  return path.slice(0, end);
+}
 export type BundleOutput =
   | {|
       type: 'success',
@@ -179,7 +204,9 @@ async function bundle(
 
   await fs.mkdirp(PathUtils.addAppDir('src'));
   for (let {name, content} of assets) {
-    await fs.writeFile(PathUtils.addAppDir(name), content);
+    let p = PathUtils.addAppDir(name);
+    await fs.mkdirp(dirname(p));
+    await fs.writeFile(p, content);
   }
 
   try {
