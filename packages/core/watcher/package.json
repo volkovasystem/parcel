@@ -1,5 +1,5 @@
 {
-  "name": "@parcel/watcher",
+  "name": "@volkovasystem/parcel-watcher",
   "version": "1.12.1",
   "description": "Blazing fast, zero configuration web application bundler",
   "main": "index.js",
@@ -20,12 +20,12 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@parcel/utils": "^1.11.0",
+    "@parcel/utils": "npm:@volkovasystem/parcel-utils@^1.11.0",
     "chokidar": "^2.1.5"
   },
   "devDependencies": {
     "@parcel/babel-register": "^1.11.1",
-    "@parcel/fs": "^1.11.0",
+    "@parcel/fs": "npm:@volkovasystem/parcel-fs@^1.11.0",
     "@parcel/test-utils": "^1.12.0",
     "mocha": "^5.2.0"
   }
