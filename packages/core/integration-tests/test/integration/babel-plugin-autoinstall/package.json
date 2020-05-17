@@ -1,3 +1,7 @@
 {
-  "name": "babel-plugin-autoinstall"
+  "name": "babel-plugin-autoinstall",
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+	"@babel/plugin-proposal-class-properties": "^7.8.3"
+  }
 }
