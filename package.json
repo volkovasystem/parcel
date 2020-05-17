@@ -1,5 +1,5 @@
 {
-  "name": "@parcel/monorepo",
+  "name": "@volkovasystem/parcel-monorepo",
   "description": "Blazing fast, zero configuration web application bundler",
   "license": "MIT",
   "repository": {
