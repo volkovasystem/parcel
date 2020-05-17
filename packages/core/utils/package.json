@@ -1,5 +1,5 @@
 {
-  "name": "@parcel/utils",
+  "name": "@volkovasystem/parcel-utils",
   "version": "1.11.0",
   "description": "Blazing fast, zero configuration web application bundler",
   "main": "index.js",
