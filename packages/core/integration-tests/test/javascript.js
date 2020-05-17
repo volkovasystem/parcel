@@ -1548,10 +1548,10 @@ describe('javascript', function() {
 
     let output = await run(b);
 
-    let err = new Error('Cannot find module "optional-dep"');
-    err.code = 'MODULE_NOT_FOUND';
+    let err = new Error("Cannot find module 'optional-dep'");
+    //err.code = 'MODULE_NOT_FOUND';
 
-    assert.deepEqual(output, err);
+    assert.deepEqual(output.message, err.message);
   });
 
   it('should support excluding dependencies in falsy branches', async function() {
