@@ -1,5 +1,5 @@
 {
-  "name": "@parcel/workers",
+  "name": "@volkovasystem/parcel-workers",
   "version": "1.11.0",
   "description": "Blazing fast, zero configuration web application bundler",
   "main": "index.js",
@@ -26,7 +26,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "@parcel/utils": "^1.11.0",
+    "@parcel/utils": "npm:@volkovasystem/parcel-utils@^1.11.0",
     "physical-cpu-count": "^2.0.0"
   }
 }
