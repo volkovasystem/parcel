@@ -10,7 +10,7 @@
     "url": "https://github.com/parcel-bundler/parcel.git"
   },
   "peerDependencies": {
-    "@babel/core": "^7.0.0"
+    "@babel/core": "npm:@volkovasystem/babel-core@^7.9.7"
   },
   "dependencies": {
     "@babel/register": "^7.4.4"
