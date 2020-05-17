@@ -1,5 +1,5 @@
 {
-  "name": "@parcel/fs",
+  "name": "@volkovasystem/parcel-fs",
   "version": "1.11.0",
   "description": "Blazing fast, zero configuration web application bundler",
   "main": "index.js",
@@ -23,7 +23,7 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@parcel/utils": "^1.11.0",
+    "@parcel/utils": "npm:@volkovasystem/parcel-utils@^1.11.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2"
   }
