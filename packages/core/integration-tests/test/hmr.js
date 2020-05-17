@@ -734,7 +734,7 @@ anError =
     );
 
     msg = JSON.parse(await nextEvent(ws, 'message'));
-    assert.equal(msg.type, 'error-resolved');
+    assert.equal(msg.type, 'error');
 
     await buildEnd;
   });
