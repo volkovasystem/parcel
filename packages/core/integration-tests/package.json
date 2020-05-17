@@ -12,9 +12,9 @@
     "test-ci": "yarn test --reporter mocha-multi-reporters --reporter-options configFile=./test/mochareporters.json"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.4",
+    "@babel/core": "npm:@volkovasystem/babel-core@^7.9.7",
     "@jetbrains/kotlinc-js-api": "^1.2.12",
-    "@parcel/fs": "^1.11.0",
+    "@parcel/fs": "npm:@volkovasystem/parcel-fs@^1.11.0",
     "@parcel/test-utils": "^1.12.0",
     "codecov": "^3.0.0",
     "command-exists": "^1.2.6",
@@ -27,7 +27,7 @@
     "mocha-multi-reporters": "^1.1.7",
     "ncp": "^2.0.0",
     "nyc": "^11.1.0",
-    "parcel-bundler": "^1.12.4",
+    "parcel-bundler": "npm:@volkovasystem/parcel-bundler^1.12.4",
     "rimraf": "^2.6.1",
     "sinon": "^5.0.1",
     "sourcemap-validator": "^1.0.6",
